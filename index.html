@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./css/basic.css">
+    <title>新北分署動產拍賣競買人喊價紀錄</title>
+  </head>
+  <body>
+    <!--維護畫面-->
+    <div id="myDIV" class="header">
+      <h1>動產拍賣競買人喊價紀錄維護畫面</h1>
+      <!-- 新增物件 -->
+      <div id="deleteDataDiv">
+        <span onclick="deleteData()" class="deleteDataBtn btn">還原資料</span>
+      </div>
+      
+      
+      <div class="addNewItem">
+        <div class="dropdown">
+          <button class="dropbtn">拍賣物件清單(請點選此處進行拍賣)</button>
+          <div class="dropdown-content">
+          </div>
+        </div>
+      </div>
+      <div class="itemDetail">
+        <span class="itemId">拍賣物編號：1</span>
+        <span class="itemName">拍賣物名稱：股票</span>
+        <span class="itemLeastPrice">最低加價金額：</span>
+      </div>
+      <div class="priceDetail">
+        <input type="text" id="myInputPeople" placeholder="競買人標號">
+        <input type="text" id="myInputPrice" placeholder="喊價金額">
+        <input type="text" id="myInputLeastPrice" placeholder="最低加價金額">
+        <span onclick="addPrice()" class="addBtn btn">新增喊價</span>
+        <span onclick="endAuctionItemBtn()" class="closeAuctionItemBtn btn">結束喊價</span>
+        <span onclick="noPeopleBuyBtn()" class="noPeopleBuyBtn btn">無人應買</span>
+        <span onclick="belowReserveBtn()" class="belowReserveBtn btn">未達底價</span>
+      </div>
+
+      <!--價格畫面-->
+      <div class="price">
+        <div class="title">出價最高金額</div>
+        <div class="nowPrice"></div>
+      </div>
+
+    </div>
+          <!--出價明細-->
+          <div class="ul">
+            <ul id="myUL">
+            </ul>
+          </div>
+    <script src="https://www.gstatic.com/firebasejs/4.12.1/firebase.js"></script>
+    <script src="./js/index.js"></script>
+  </body>
+</html>

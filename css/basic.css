@@ -1,0 +1,309 @@
+body {
+  margin: 0;
+  min-width: 250px;
+}
+/* Include the padding and border in an element's total width and height */
+* {
+  box-sizing: border-box;
+}
+/* Style the header */
+.header {
+ /* margin-top: -20px;
+  */
+  background-color: #75B8E8;
+  position: fixed;
+  top:0;
+ /* padding: 30px 40px;
+  */
+  color: white;
+  text-align: center;
+  width:100%;
+  height: 300px;
+}
+
+h1{
+  /* text-decoration: underline; */
+}
+
+.addNewItem{
+ /* display: flex;
+  */
+ /* justify-content: center;
+  */
+  height: 105px;
+}
+.itemListContainer{
+}
+.itemListContainer .itemList{
+  font-size: 2.2em;
+  color: red;
+  cursor: pointer;
+  margin-top:10px;
+}
+.itemListContainer .itemList:nth-child(odd){
+  color: blue;
+}
+.itemListContainer .itemList:hover{
+  font-size: 2.3em;
+}
+.dropbtn {
+  background-color: #045168;
+  color: white;
+  padding: 16px;
+  font-size: 1.5em;
+  border: none;
+  cursor: pointer;
+  min-width: 800px;
+}
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+.dropdown-content {
+  display: none;
+  font-size: 1.5em;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 800px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+.dropdown-content a:hover {
+  background-color: #f1f1f1;
+  color: red;
+  font-size: 1.6em;
+}
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+.dropdown:hover .dropbtn {
+  background-color: rgb(78, 118, 80);
+}
+span.itemId , span.itemName ,span.itemLeastPrice{
+  font-size: 2em;
+  display: none;
+  margin-bottom: 20px;
+  color: black;
+  margin-right: 20px;
+  font-weight: bolder;
+}
+
+span.spanColor{
+  color: rgb(255, 255, 255);
+  text-decoration: underline;
+}
+.itemDetail{
+  margin-bottom: 20px;
+}
+.picture{
+  display: flex;
+  justify-content: center;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+}
+img{
+  width :20%;
+  background-color: white;
+}
+.ul{
+  padding-top: 520px;
+ /* position: fixed;
+  */
+}
+/* Remove margins and padding from the list */
+ul {
+  margin: 10;
+  padding: 0;
+}
+/* Style the list items */
+ul li {
+  cursor: pointer;
+ /* position:inherit;
+  */
+  padding: 12px 8px 12px 40px;
+  list-style-type: none;
+  background: #eee;
+  font-size: 2em;
+  transition: 0.2s;
+  text-align: center;
+ /* make the list items unselectable */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+/* Set all odd list items to a different color (zebra-stripes) */
+ul li:nth-child(odd) {
+  background: #f9f9f9;
+}
+/* Darker background-color on hover */
+ul li:hover {
+  background: #ddd;
+}
+/* When clicked on, add a background color and strike out text */
+ul li.checked {
+  background: #888;
+  color: #fff;
+  text-decoration: line-through;
+}
+/* Add a "checked" mark when clicked on */
+ul li.checked::before {
+  content: '';
+  position: absolute;
+  border-color: #fff;
+  border-style: solid;
+  border-width: 0 2px 2px 0;
+  top: 10px;
+  left: 16px;
+  transform: rotate(45deg);
+  height: 15px;
+  width: 7px;
+}
+.priceDetail{
+  width: 100%;
+  height: 100px;
+  margin:0px auto;
+ /* margin-top: 10px;
+  */
+ /* border: 1px solid;
+  */
+  display: none;
+ /* justify-content: center;
+  */
+  align-items: center;
+ /* align-content: center;
+  */
+}
+/* Style the input */
+input {
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  width: 200px;
+  height:70px;
+  padding: 10px;
+  font-size: 2em;
+  margin-right: 10px;
+  justify-content: center;
+}
+#myInputPeople{
+  width: 180px;
+}
+#myInputLeastPrice{
+  width: 250px;
+}
+#itemID{
+  width: 100px;
+  height:70px;
+}
+input[type="text"] {
+  font-size:2em;
+}
+/* input::placeholder {
+  font: 2em sans-serif;
+  text-align: left;
+  line-height: 35px;
+}
+*/
+/* Style the "Add" button */
+.btn {
+  padding: 10px;
+  width: 250px;
+  height: 70px;
+  background: #7852B2;
+  color: white;
+ /* color: #f44336;
+  */
+ /* float: left;
+  */
+  text-align: center;
+  font-size: 1.5em;
+  cursor: pointer;
+  transition: 0.3s;
+  border-radius: 0;
+  margin-right: 10px;
+  border-radius: 5px;
+}
+.btn:hover {
+  background-color: #8311FA;
+}
+.addBtn{
+  background: #218838;
+}
+.addAuctionItemBtn{
+  background: #28A745;
+}
+.addAuctionItemBtn:hover{
+  background: #2ccf52;
+}
+.closeAuctionItemBtn{
+  background-color: red;
+}
+.price{
+  width:100%;
+  margin-top: 20px;
+  height: 250px;
+  background-color: #3B7C6E;
+  display: none;
+  justify-content: center;
+  align-items: center;
+ /* position: absolute;
+ 1 */
+}
+.title{
+  height: 100px;
+  text-align: center;
+  line-height: 100px ;
+  font-size: 2.5em;
+  color: white;
+}
+.nowPrice{
+  height: 150px;
+  text-align: center;
+  line-height: 100px ;
+  font-size: 5em;
+  color: white;
+}
+
+#deleteDataDiv {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.deleteDataBtn {
+  background-color: #ff4d4d;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.deleteDataBtn:hover {
+  background-color: #e60000;
+}
+
+
+.btn-group {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.belowReserveBtn {
+  background-color: #f0ad4e;
+}
+
+.belowReserveBtn:hover {
+  background-color: #ec971f;
+}

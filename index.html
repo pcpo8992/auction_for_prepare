@@ -1,56 +1,1335 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./css/basic.css">
-    <title>新北分署動產拍賣競買人喊價紀錄</title>
-  </head>
-  <body>
-    <!--維護畫面-->
-    <div id="myDIV" class="header">
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新北分署動產拍賣競買人喊價紀錄</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Microsoft JhengHei', 'PingFang TC', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* 左側欄位 */
+    .sidebar {
+      width: 350px;
+      background: white;
+      box-shadow: 2px 0 20px rgba(0,0,0,0.1);
+      overflow-y: auto;
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .sidebar-header {
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      color: white;
+      padding: 25px 20px;
+      text-align: center;
+      font-size: 1.3em;
+      font-weight: 600;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .item-list {
+      padding: 15px 0;
+    }
+
+    .item-card {
+      margin: 10px 15px;
+      padding: 15px;
+      background: linear-gradient(135deg, #f0f4ff 0%, white 100%);
+      border-radius: 12px;
+      border-left: 5px solid #2a5298;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .item-card:hover {
+      transform: translateX(5px);
+      box-shadow: 0 4px 15px rgba(42, 82, 152, 0.3);
+    }
+
+    .item-card.active {
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      color: white;
+      border-left-color: #ffd700;
+    }
+
+    .item-card.disabled {
+      cursor: not-allowed;
+      background: #f5f5f5;
+      border-left-color: #999;
+    }
+
+    .item-card.disabled:hover {
+      transform: none;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .item-card.disabled .item-name {
+      color: #666;
+    }
+    
+    .item-card.auction-in-progress {
+      background: linear-gradient(135deg, #fff3cd 0%, #fff8e1 100%);
+      border-left-color: #ffc107;
+    }
+    
+    .item-card.auction-in-progress .item-status {
+      background: #fff3cd;
+      color: #856404;
+      font-weight: 700;
+    }
+    
+    .item-card.auction-in-progress .item-id {
+      color: #856404;
+    }
+    
+    .item-card.auction-in-progress .item-label {
+      background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
+      color: #000;
+    }
+
+    /* 快速跳轉按鈕 */
+    .quick-nav {
+      padding: 15px;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border-radius: 12px;
+      margin: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .quick-nav-title {
+      font-size: 0.9em;
+      color: #666;
+      margin-bottom: 10px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .quick-nav-buttons {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .quick-nav-btn {
+      background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.85em;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(42, 82, 152, 0.3);
+    }
+
+    .quick-nav-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(42, 82, 152, 0.5);
+    }
+
+    .quick-nav-btn.next {
+      background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+    }
+
+    .quick-nav-btn.next:hover {
+      box-shadow: 0 4px 12px rgba(39, 174, 96, 0.5);
+    }
+    
+    .item-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    .item-header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .item-id {
+      font-size: 1.3em;
+      font-weight: 700;
+      color: #1e3c72;
+    }
+    
+    .item-card.active .item-id {
+      color: #ffd700;
+    }
+    
+    .item-label {
+      font-size: 0.85em;
+      color: #fff;
+      background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+      padding: 4px 12px;
+      border-radius: 8px;
+      display: inline-block;
+      font-weight: 600;
+      box-shadow: 0 2px 6px rgba(42, 82, 152, 0.3);
+    }
+    
+    .item-card.active .item-label {
+      background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+      color: #1e3c72;
+      font-weight: 700;
+    }
+
+    .item-status {
+      font-size: 0.85em;
+      padding: 4px 10px;
+      border-radius: 12px;
+      background: rgba(42, 82, 152, 0.15);
+      color: #1e3c72;
+      font-weight: 600;
+    }
+    
+    .item-card.active .item-status {
+      background: rgba(255, 215, 0, 0.9);
+      color: #1e3c72;
+      font-weight: 700;
+    }
+    
+    .item-card.disabled .item-status {
+      background: #ffebcc;
+      color: #ff6b35;
+      font-weight: 700;
+    }
+
+    .item-name {
+      font-size: 1.05em;
+      margin-top: 8px;
+      line-height: 1.5;
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .item-card.active .item-name {
+      color: white;
+      font-weight: 700;
+    }
+    
+    .item-card.disabled .item-name {
+      color: #666;
+    }
+
+    .item-actions {
+      margin-top: 10px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .restart-btn {
+      background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+      color: white;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-size: 0.95em;
+      cursor: pointer;
+      font-weight: 700;
+      transition: all 0.3s ease;
+      box-shadow: 0 3px 12px rgba(255, 107, 53, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .restart-btn:hover {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 5px 20px rgba(255, 107, 53, 0.7);
+      background: linear-gradient(135deg, #ff8c42 0%, #ffa600 100%);
+    }
+
+    .restart-btn::before {
+      content: '🔄 ';
+      font-size: 1.1em;
+    }
+
+    /* 主要內容區 */
+    .main-content {
+      flex: 1;
+      margin-left: 350px;
+      padding: 30px;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      padding: 25px 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      margin-bottom: 25px;
+    }
+
+    h1 {
+      color: white;
+      text-align: center;
+      font-size: 1.6em;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    #deleteDataDiv {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    .deleteDataBtn {
+      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+      color: white;
+      padding: 12px 30px;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 1em;
+      font-weight: 600;
+      box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+      transition: all 0.3s ease;
+      display: inline-block;
+    }
+
+    .deleteDataBtn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(231, 76, 60, 0.6);
+    }
+
+    .itemDetail {
+      background: white;
+      padding: 15px 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      display: none;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .itemId, .itemName, .itemLeastPrice {
+      font-size: 1.15em;
+      color: #333;
+      font-weight: 600;
+    }
+
+    .spanColor {
+      color: #2a5298;
+      font-weight: 700;
+      margin-left: 8px;
+    }
+
+    .priceDetail {
+      display: none;
+      background: white;
+      padding: 20px 25px;
+      border-radius: 15px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      margin-bottom: 15px;
+    }
+
+    .input-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+    
+    .input-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    
+    .input-label {
+      font-size: 0.95em;
+      color: #1e3c72;
+      font-weight: 700;
+      padding-left: 4px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    input {
+      padding: 10px 14px;
+      border: 2px solid #d0d7de;
+      border-radius: 8px;
+      font-size: 1em;
+      transition: all 0.3s ease;
+      background: #f6f8fa;
+      font-weight: 500;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #2a5298;
+      box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.1);
+      background: white;
+    }
+
+    input::placeholder {
+      color: #999;
+      font-size: 0.95em;
+    }
+
+    #myInputPeople {
+      width: 160px;
+    }
+
+    #myInputPrice {
+      width: 180px;
+    }
+
+    #myInputLeastPrice {
+      width: 180px;
+    }
+
+    .btn-group {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .btn {
+      padding: 18px 20px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.05em;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      color: white;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      white-space: nowrap;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    .btn:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 25px rgba(0,0,0,0.3);
+    }
+
+    .btn:active {
+      transform: translateY(-1px);
+    }
+
+    .addBtn {
+      background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+    }
+
+    .addBtn:hover {
+      background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+    }
+
+    .addBtn::after {
+      content: ' ✓';
+      font-size: 1.2em;
+    }
+
+    .closeAuctionItemBtn {
+      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    }
+
+    .closeAuctionItemBtn:hover {
+      background: linear-gradient(135deg, #ec7063 0%, #e74c3c 100%);
+    }
+
+    .closeAuctionItemBtn::after {
+      content: ' 🔨';
+      font-size: 1.1em;
+    }
+
+    .noPeopleBuyBtn {
+      background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+    }
+
+    .noPeopleBuyBtn:hover {
+      background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+    }
+
+    .noPeopleBuyBtn::after {
+      content: ' ⚠️';
+      font-size: 1.1em;
+    }
+
+    .belowReserveBtn {
+      background: linear-gradient(135deg, #8e44ad 0%, #7d3c98 100%);
+    }
+
+    .belowReserveBtn:hover {
+      background: linear-gradient(135deg, #a569bd 0%, #8e44ad 100%);
+    }
+
+    .belowReserveBtn::after {
+      content: ' 📉';
+      font-size: 1.1em;
+    }
+
+    .price {
+      display: none;
+      background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+      padding: 25px;
+      border-radius: 18px;
+      box-shadow: 0 8px 30px rgba(39, 174, 96, 0.4);
+      text-align: center;
+      margin-bottom: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .title {
+      font-size: 1.5em;
+      color: white;
+      margin-bottom: 12px;
+      font-weight: 600;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .nowPrice {
+      font-size: 3.5em;
+      color: #fff;
+      font-weight: 700;
+      text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+      animation: pulse 2s ease-in-out infinite;
+      background: linear-gradient(45deg, #fff, #ffd700, #fff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      background-size: 200% auto;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+    }
+
+    .ul {
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .ul-header {
+      font-size: 1.2em;
+      font-weight: 700;
+      color: #1e3c72;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 3px solid #2a5298;
+    }
+
+    ul {
+      list-style: none;
+    }
+
+    ul li {
+      background: linear-gradient(90deg, #f0f4ff 0%, white 100%);
+      padding: 18px 25px;
+      margin-bottom: 10px;
+      border-radius: 12px;
+      font-size: 1.25em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      border-left: 5px solid #2a5298;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #333;
+      font-weight: 600;
+    }
+
+    ul li:hover {
+      transform: translateX(-5px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      background: linear-gradient(90deg, #e0e9ff 0%, #f0f4ff 100%);
+    }
+
+    ul li:nth-child(even) {
+      border-left-color: #1e3c72;
+    }
+
+    ul li::before {
+      content: '🔨';
+      margin-right: 15px;
+      font-size: 1.2em;
+    }
+
+    @media (max-width: 1024px) {
+      .sidebar {
+        width: 280px;
+      }
+
+      .main-content {
+        margin-left: 280px;
+      }
+      
+      .input-group {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .input-wrapper {
+        width: 100%;
+      }
+      
+      #myInputPeople, #myInputPrice, #myInputLeastPrice {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        position: relative;
+        height: auto;
+        max-height: 300px;
+      }
+
+      .main-content {
+        margin-left: 0;
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 1.5em;
+      }
+
+      .btn {
+        font-size: 1em;
+        padding: 15px 18px;
+      }
+      
+      .btn-group {
+        grid-template-columns: 1fr;
+      }
+
+      input {
+        font-size: 1em;
+        padding: 10px 12px;
+      }
+
+      .nowPrice {
+        font-size: 2.5em;
+      }
+
+      ul li {
+        font-size: 1.1em;
+        padding: 15px 20px;
+      }
+    }
+
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+    }
+  </style>
+</head>
+<body>
+  <!-- 左側欄位 -->
+  <div class="sidebar">
+    <div class="sidebar-header">拍賣物件清單</div>
+    <div class="quick-nav">
+      <div class="quick-nav-title">快速跳轉</div>
+      <div class="quick-nav-buttons">
+        <button class="quick-nav-btn" onclick="scrollToTop()">⬆️ 頂部</button>
+        <button class="quick-nav-btn next" onclick="scrollToNextAvailable()">▶️ 下一個</button>
+      </div>
+    </div>
+    <div class="item-list" id="itemList"></div>
+  </div>
+
+  <!-- 主要內容區 -->
+  <div class="main-content">
+    <div class="header">
       <h1>動產拍賣競買人喊價紀錄維護畫面</h1>
-      <!-- 新增物件 -->
+      
       <div id="deleteDataDiv">
         <span onclick="deleteData()" class="deleteDataBtn btn">還原資料</span>
       </div>
-      
-      
-      <div class="addNewItem">
-        <div class="dropdown">
-          <button class="dropbtn">拍賣物件清單(請點選此處進行拍賣)</button>
-          <div class="dropdown-content">
-          </div>
-        </div>
-      </div>
+
       <div class="itemDetail">
-        <span class="itemId">拍賣物編號：1</span>
-        <span class="itemName">拍賣物名稱：股票</span>
-        <span class="itemLeastPrice">最低加價金額：</span>
-      </div>
-      <div class="priceDetail">
-        <input type="text" id="myInputPeople" placeholder="競買人標號">
-        <input type="text" id="myInputPrice" placeholder="喊價金額">
-        <input type="text" id="myInputLeastPrice" placeholder="最低加價金額">
-        <span onclick="addPrice()" class="addBtn btn">新增喊價</span>
-        <span onclick="endAuctionItemBtn()" class="closeAuctionItemBtn btn">結束喊價</span>
-        <span onclick="noPeopleBuyBtn()" class="noPeopleBuyBtn btn">無人應買</span>
-        <span onclick="belowReserveBtn()" class="belowReserveBtn btn">未達底價</span>
+        <span class="itemId">拍賣物編號:1</span>
+        <span class="itemName">拍賣物名稱:股票</span>
+        <span class="itemLeastPrice">最低加價金額:</span>
       </div>
 
-      <!--價格畫面-->
+      <div class="priceDetail">
+        <div class="input-group">
+          <div class="input-wrapper">
+            <label class="input-label">競買人標號</label>
+            <input type="text" id="myInputPeople" placeholder="請輸入標號">
+          </div>
+          <div class="input-wrapper">
+            <label class="input-label">喊價金額</label>
+            <input type="text" id="myInputPrice" placeholder="請輸入金額">
+          </div>
+          <div class="input-wrapper">
+            <label class="input-label">最低加價金額</label>
+            <input type="text" id="myInputLeastPrice" placeholder="請輸入金額">
+          </div>
+        </div>
+        <div class="btn-group">
+          <span onclick="addPrice()" class="addBtn btn">新增喊價</span>
+          <span onclick="endAuctionItemBtn()" class="closeAuctionItemBtn btn">結束喊價</span>
+          <span onclick="noPeopleBuyBtn()" class="noPeopleBuyBtn btn">無人應買</span>
+          <span onclick="belowReserveBtn()" class="belowReserveBtn btn">未達底價</span>
+        </div>
+      </div>
+
       <div class="price">
         <div class="title">出價最高金額</div>
         <div class="nowPrice"></div>
       </div>
-
     </div>
-          <!--出價明細-->
-          <div class="ul">
-            <ul id="myUL">
-            </ul>
-          </div>
-    <script src="https://www.gstatic.com/firebasejs/4.12.1/firebase.js"></script>
-    <script src="./js/index.js"></script>
-  </body>
+
+    <div class="ul">
+      <div class="ul-header">📋 喊價紀錄</div>
+      <ul id="myUL"></ul>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/4.12.1/firebase.js"></script>
+  <script>
+    let liNumber = 0;
+    let currentItemID = null;
+    let leastPrice = 0;
+
+    let firebaseConfig = {
+      databaseURL: "https://auction-88ffa-default-rtdb.firebaseio.com/",
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    window.onload = function() {
+      refreshItemList();
+    };
+
+    document.querySelector('#myInputPrice').addEventListener('keypress', function(e) {
+      if (e.which === 13) {
+        addPrice();
+      }
+    });
+
+    document.querySelector('#myInputLeastPrice').addEventListener('keypress', function(e) {
+      if (e.which === 13) {
+        let inputLeastPrice = document.querySelector('#myInputLeastPrice').value;
+        if (inputLeastPrice != "" && !isNaN(inputLeastPrice)) {
+          database.ref('/item/' + currentItemID).update({
+            "itemLeastPrice": inputLeastPrice,
+          });
+          document.querySelector(".itemLeastPrice").innerHTML = ",最低加價金額：" + "<span class='spanColor leastPrice'>" + numberComma(inputLeastPrice) + "</span>";
+        }
+        document.querySelector('#myInputLeastPrice').value = "";
+        focusBtn("myInputPeople");
+        var inputValuePeople = document.getElementById("myInputPeople").value;
+        var inputValuePrice = document.getElementById("myInputPrice").value;
+        if (inputValuePeople != "" && inputValuePrice != "") {
+          addPrice();
+        }
+      }
+    });
+
+    function numberComma(num) {
+      let comma = /\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g
+      return num.toString().replace(comma, ',')
+    }
+
+    function setHtmlTagStyleDisplay(tagName, display) {
+      document.querySelector(tagName).style.display = display;
+    }
+
+    function focusBtn(IDName){
+      document.getElementById(IDName).focus();
+    }
+
+    // 刷新左側物件清單
+    function refreshItemList() {
+      const itemListDiv = document.getElementById("itemList");
+      itemListDiv.innerHTML = "";
+
+      database.ref("/item").once('value', e => {
+        const items = e.val();
+        if (items != null) {
+          const itemArray = Object.values(items);
+          
+          itemArray.forEach(item => {
+            const itemCard = document.createElement("div");
+            
+            // 判斷狀態
+            let statusText = "可拍賣";
+            let isDisabled = false;
+            let showRestart = false;
+            
+            if (item.status == 2) {
+              if (item.endAuction == 1) {
+                statusText = "已結束";
+                isDisabled = true;
+                showRestart = true;
+              } else if (item.nopeople == 1) {
+                statusText = "無人應買";
+                isDisabled = true;
+                showRestart = true;
+              } else if (item.belowReserve == 1) {
+                statusText = "未達底價";
+                isDisabled = true;
+                showRestart = true;
+              } else {
+                statusText = "拍賣中";
+                // 拍賣中的項目也顯示重新開始按鈕
+                showRestart = true;
+                // 如果是當前正在拍賣的項目，標記為 active
+                if (currentItemID == item.unicID) {
+                  itemCard.classList.add("active");
+                } else {
+                  // 其他拍賣中但非當前項目，視為可重置狀態
+                  isDisabled = false;
+                }
+              }
+            } else if (item.status == 3) {
+              statusText = "已完成";
+              isDisabled = true;
+              showRestart = true;
+            }
+
+            itemCard.className = "item-card";
+            if (isDisabled) {
+              itemCard.classList.add("disabled");
+            }
+            if (currentItemID == item.unicID && !isDisabled) {
+              itemCard.classList.add("active");
+            }
+            // 如果是拍賣中但不是當前項目，加上特殊樣式
+            if (item.status == 2 && !item.endAuction && !item.nopeople && !item.belowReserve && item.unicID != currentItemID) {
+              itemCard.classList.add("auction-in-progress");
+            }
+            
+            itemCard.dataset.unicId = item.unicID;
+            itemCard.dataset.status = item.status;
+
+            itemCard.innerHTML = `
+              <div class="item-card-header">
+                <div class="item-header-left">
+                  <div class="item-id">${item.deptNo} 股</div>
+                  <div class="item-label">標別：${item.itemID}</div>
+                </div>
+                <div class="item-status">${statusText}</div>
+              </div>
+              <div class="item-name">${item.itemName}</div>
+              ${showRestart ? '<div class="item-actions"><button class="restart-btn" onclick="restartAuction(\'' + item.unicID + '\')">重新開始</button></div>' : ''}
+            `;
+
+            if (!isDisabled) {
+              itemCard.onclick = function(e) {
+                if (!e.target.classList.contains('restart-btn')) {
+                  addAuctionItem(item.unicID);
+                }
+              };
+            }
+
+            itemListDiv.appendChild(itemCard);
+          });
+        }
+      });
+    }
+
+    // 捲動到頂部
+    function scrollToTop() {
+      document.querySelector('.sidebar').scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+
+    // 捲動到下一個可用項目
+    function scrollToNextAvailable() {
+      const itemCards = document.querySelectorAll('.item-card');
+      let foundCurrent = false;
+      let nextCard = null;
+
+      // 如果沒有選中項目，找第一個可用的
+      if (!currentItemID) {
+        for (let card of itemCards) {
+          if (!card.classList.contains('disabled')) {
+            nextCard = card;
+            break;
+          }
+        }
+      } else {
+        // 找到當前選中項目後的下一個可用項目
+        for (let card of itemCards) {
+          if (foundCurrent && !card.classList.contains('disabled')) {
+            nextCard = card;
+            break;
+          }
+          if (card.dataset.unicId == currentItemID) {
+            foundCurrent = true;
+          }
+        }
+        
+        // 如果沒找到，從頭開始找
+        if (!nextCard) {
+          for (let card of itemCards) {
+            if (!card.classList.contains('disabled')) {
+              nextCard = card;
+              break;
+            }
+          }
+        }
+      }
+
+      if (nextCard) {
+        nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // 延遲一下再點擊，讓用戶看到滾動效果
+        setTimeout(() => {
+          nextCard.click();
+        }, 500);
+      } else {
+        alert('沒有可用的拍賣項目');
+      }
+    }
+
+    // 自動捲動到下一個可用項目（在完成拍賣後）
+    function autoScrollToNextAfterFinish(finishedItemID) {
+      const itemCards = document.querySelectorAll('.item-card');
+      let foundFinished = false;
+      let nextCard = null;
+
+      console.log('開始尋找下一個項目，已完成的項目 ID:', finishedItemID);
+
+      // 找到剛完成的項目後的下一個可用項目
+      for (let card of itemCards) {
+        if (card.dataset.unicId == finishedItemID) {
+          foundFinished = true;
+          console.log('找到已完成的項目');
+          continue;
+        }
+        
+        // 在找到已完成項目之後，找第一個可用的項目
+        if (foundFinished && !card.classList.contains('disabled')) {
+          nextCard = card;
+          console.log('找到下一個可用項目:', card.dataset.unicId);
+          break;
+        }
+      }
+
+      // 如果沒找到（可能是最後一個），就從頭找第一個可用的
+      if (!nextCard) {
+        console.log('從頭尋找第一個可用項目');
+        for (let card of itemCards) {
+          if (!card.classList.contains('disabled')) {
+            nextCard = card;
+            console.log('找到第一個可用項目:', card.dataset.unicId);
+            break;
+          }
+        }
+      }
+
+      // 如果找到下一個項目，自動捲動到該位置
+      if (nextCard) {
+        console.log('執行捲動');
+        nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        console.log('沒有可用的項目');
+      }
+    }
+
+    // 重新開始拍賣
+    function restartAuction(unicID) {
+      // 檢查是否有喊價記錄
+      database.ref('/item/' + unicID + '/price_detail').once('value', snapshot => {
+        const priceDetail = snapshot.val();
+        let hasPrice = false;
+        
+        if (priceDetail && priceDetail.li) {
+          // 檢查是否有實際的喊價數據
+          const liData = Object.values(priceDetail.li);
+          hasPrice = liData.some(item => item && item.myInputPrice);
+        }
+        
+        let confirmMessage = "確定要重新開始此拍賣項目嗎？";
+        if (hasPrice) {
+          confirmMessage = "此項目已有喊價記錄，重新開始將清除所有喊價資料。確定要繼續嗎？";
+        }
+        
+        if (confirm(confirmMessage)) {
+          database.ref('/item/' + unicID).update({
+            "status": 1,
+            "endAuction": "",
+            "nopeople": "",
+            "belowReserve": "",
+            "price_detail": "",
+            "itemLeastPrice": ""
+          });
+          
+          // 清空當前顯示
+          if (currentItemID == unicID) {
+            currentItemID = null;
+            setHtmlTagStyleDisplay(".priceDetail", "none");
+            setHtmlTagStyleDisplay(".price", "none");
+            setHtmlTagStyleDisplay(".itemDetail", "none");
+            
+            let ul = document.querySelectorAll("li");
+            for (let i = 0; i < ul.length; i++) {
+              ul[i].remove();
+            }
+            liNumber = 0;
+          }
+          
+          refreshItemList();
+        }
+      });
+    }
+
+    function addAuctionItem(number) {
+      let itemObject;
+      database.ref("/item").once('value', e => {
+        const items = e.val();
+        if (items != null) {
+          const itemArray = Object.values(items);
+          
+          // 更新其他項目狀態
+          for (let i = 0; i < itemArray.length; i++) {
+            if (itemArray[i].status == 2 && itemArray[i].unicID != number) {
+              if (itemArray[i].nopeople == 1 || itemArray[i].endAuction == 1 || itemArray[i].belowReserve == 1) {
+                database.ref('/item/' + itemArray[i].unicID).update({
+                  "status": 3
+                });
+              }
+            }
+            
+            if (itemArray[i].status == 1 && itemArray[i].unicID == number) {
+              itemObject = itemArray[i];
+            }
+          }
+
+          if (itemObject) {
+            currentItemID = itemObject.unicID;
+            
+            setHtmlTagStyleDisplay(".priceDetail", "flex");
+            setHtmlTagStyleDisplay(".itemDetail", "flex");
+            
+            document.querySelector(".itemId").innerHTML = "拍賣物編號：" + "<span class='spanColor'>" + itemObject.itemID + "</span>";
+            document.querySelector(".itemName").innerHTML = ",拍賣物名稱：" + "<span class='spanColor'>" + itemObject.itemName + "</span>";
+            document.querySelector(".itemLeastPrice").innerHTML = ",最低加價金額：" + "<span class='spanColor leastPrice'>" + numberComma(itemObject.itemLeastPrice || 0) + "</span>";
+            
+            leastPrice = itemObject.itemLeastPrice || 0;
+
+            database.ref('/item/' + itemObject.unicID).update({
+              "status": 2
+            });
+
+            refreshItemList();
+          }
+        }
+      });
+    }
+
+    function checkPriceIsCorrect(inputValuePrice) {
+      var maxValue = document.querySelector("li") ? document.querySelector("li").value : 0;
+      var leastPriceText = document.querySelector(".leastPrice").textContent == "" ? 0 : document.querySelector(".leastPrice").textContent;
+      
+      if(parseInt(inputValuePrice) - parseInt(maxValue) - parseInt(leastPriceText.toString().replace(/,/g, "")) >= 0 ){
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    function addPrice() {
+      var ul = document.querySelector("#myUL");
+      var li = document.createElement("li");
+      liNumber += 1;
+      li.id = 'li' + liNumber;
+      li.number = liNumber;
+
+      var inputValuePeople = document.getElementById("myInputPeople").value;
+      var inputValuePrice = document.getElementById("myInputPrice").value;
+      li.value = inputValuePrice;
+
+      var finialValue = inputValuePeople + "號競買人 喊價 " + numberComma(inputValuePrice) + " 元";
+      var t = document.createTextNode(finialValue);
+      li.appendChild(t);
+
+      if (inputValuePeople === '' || inputValuePrice === "") {
+        if (inputValuePeople === '') {
+          alert("必須輸入競買人資料");
+          document.getElementById("myInputPeople").focus();
+        } else if (inputValuePrice === "" || isNaN(inputValuePrice)) {
+          alert("必須輸入喊價金額資料");
+          document.getElementById("myInputPrice").focus();
+        }
+      } else if (isNaN(inputValuePrice) || isNaN(inputValuePeople)) {
+        if (isNaN(inputValuePrice)) {
+          alert("輸入金額不是數字");
+          document.getElementById("myInputPrice").focus();
+        } else if (isNaN(inputValuePeople)) {
+          alert("輸入不是數字");
+          document.getElementById("myInputPeople").focus();
+        }
+      } else if (!checkPriceIsCorrect(inputValuePrice)){
+        alert("輸入金額需大於前次金額");
+      } else {
+        database.ref('/item/' + currentItemID + '/price_detail' + '/li/' + liNumber).update({
+          'myInputPeople': inputValuePeople,
+          'myInputPrice': inputValuePrice
+        });
+
+        document.querySelector(".nowPrice").textContent = numberComma(inputValuePrice) + '元';
+        setHtmlTagStyleDisplay(".price", "block");
+
+        document.getElementById("myUL").prepend(li);
+        document.getElementById("myInputPeople").value = "";
+        document.getElementById("myInputPrice").value = "";
+        document.getElementById("myInputLeastPrice").value = "";
+
+        document.getElementById("myInputPeople").focus();
+
+        li.onclick = function() {
+          li.remove();
+          liNumber -= 1;
+          if (liNumber == 0) {
+            document.querySelector(".nowPrice").textContent = "";
+          } else {
+            document.querySelector(".nowPrice").textContent = numberComma(document.querySelector("#li" + liNumber).value) + '元';
+          }
+          database.ref('/item/' + currentItemID + '/price_detail' + '/li/' + li.number).set("");
+        };
+      }
+    }
+
+    function endAuctionItemBtn() {
+      if (!currentItemID) {
+        alert('請先選擇拍賣項目');
+        return;
+      }
+      
+      const finishedItemID = currentItemID; // 保存結束的項目 ID
+      
+      document.getElementById("myInputPeople").value = "";
+      document.getElementById("myInputPrice").value = "";
+      document.getElementById("myInputLeastPrice").value = "";
+      
+      database.ref('/item/' + finishedItemID).update({
+        "status": 2,
+        "endAuction": 1
+      }).then(() => {
+        console.log('結束喊價狀態已更新');
+        
+        let ul = document.querySelectorAll("li");
+        for (let i = 0; i < ul.length; i++) {
+          ul[i].remove();
+        }
+        
+        liNumber = 0;
+
+        setHtmlTagStyleDisplay(".priceDetail", "none");
+        setHtmlTagStyleDisplay(".price", "none");
+        setHtmlTagStyleDisplay(".itemDetail", "none");
+        
+        currentItemID = null;
+        
+        setTimeout(() => {
+          refreshItemList();
+          setTimeout(() => {
+            autoScrollToNextAfterFinish(finishedItemID);
+          }, 400);
+        }, 200);
+      }).catch((error) => {
+        console.error('更新結束喊價狀態時發生錯誤:', error);
+        alert('操作失敗，請重試');
+      });
+    }
+
+    function noPeopleBuyBtn() {
+      if (!currentItemID) {
+        alert('請先選擇拍賣項目');
+        return;
+      }
+      
+      const finishedItemID = currentItemID; // 保存結束的項目 ID
+      
+      database.ref('/item/' + finishedItemID).update({
+        "status": 2,
+        "nopeople": 1,
+      }).then(() => {
+        console.log('無人應買狀態已更新');
+        
+        let ul = document.querySelectorAll("li");
+        for (let i = 0; i < ul.length; i++) {
+          ul[i].remove();
+        }
+        
+        liNumber = 0;
+
+        setHtmlTagStyleDisplay(".priceDetail", "none");
+        setHtmlTagStyleDisplay(".price", "none");
+        setHtmlTagStyleDisplay(".itemDetail", "none");
+        
+        currentItemID = null;
+        
+        setTimeout(() => {
+          refreshItemList();
+          setTimeout(() => {
+            autoScrollToNextAfterFinish(finishedItemID);
+          }, 400);
+        }, 200);
+      }).catch((error) => {
+        console.error('更新無人應買狀態時發生錯誤:', error);
+        alert('操作失敗，請重試');
+      });
+    }
+
+    function belowReserveBtn() {
+      if (!currentItemID) {
+        alert('請先選擇拍賣項目');
+        return;
+      }
+      
+      const finishedItemID = currentItemID; // 保存結束的項目 ID
+      
+      // 清空輸入框
+      document.getElementById("myInputPeople").value = "";
+      document.getElementById("myInputPrice").value = "";
+      document.getElementById("myInputLeastPrice").value = "";
+      
+      // 更新資料庫
+      database.ref('/item/' + finishedItemID).update({
+        "status": 2,
+        "belowReserve": 1
+      }).then(() => {
+        console.log('未達底價狀態已更新');
+        
+        // 清空喊價記錄
+        let ul = document.querySelectorAll("li");
+        for (let i = 0; i < ul.length; i++) {
+          ul[i].remove();
+        }
+        
+        // 重置 liNumber
+        liNumber = 0;
+
+        // 隱藏相關區塊
+        setHtmlTagStyleDisplay(".priceDetail", "none");
+        setHtmlTagStyleDisplay(".price", "none");
+        setHtmlTagStyleDisplay(".itemDetail", "none");
+        
+        // 清空當前項目 ID
+        currentItemID = null;
+        
+        // 延遲刷新列表和捲動
+        setTimeout(() => {
+          refreshItemList();
+          setTimeout(() => {
+            autoScrollToNextAfterFinish(finishedItemID);
+          }, 400);
+        }, 200);
+      }).catch((error) => {
+        console.error('更新未達底價狀態時發生錯誤:', error);
+        alert('操作失敗，請重試');
+      });
+    }
+
+    function deleteData(){
+      database.ref("/item").once('value', e => {
+        const items = e.val();
+        if (items != null) {
+          const itemArray = Object.values(items);
+          for (let i = 0; i < itemArray.length; i++) {
+            let number = 1 + i;
+            database.ref('/item/' + number).update({
+              "deptNo": itemArray[i].deptNo,
+              "execNo": itemArray[i].execNo,
+              "itemID": itemArray[i].itemID,
+              "itemLeastPrice": "",
+              "itemName": itemArray[i].itemName,
+              "status": 1,
+              "serialNo": itemArray[i].serialNo,
+              "unicID": itemArray[i].unicID,
+              "price_detail": "",
+              "endAuction": "",
+              "nopeople": "",
+              "belowReserve": ""
+            });
+          }
+          
+          currentItemID = null;
+          setHtmlTagStyleDisplay(".priceDetail", "none");
+          setHtmlTagStyleDisplay(".price", "none");
+          setHtmlTagStyleDisplay(".itemDetail", "none");
+          
+          let ul = document.querySelectorAll("li");
+          for (let i = 0; i < ul.length; i++) {
+            ul[i].remove();
+          }
+          
+          refreshItemList();
+        }
+      });
+    }
+  </script>
+</body>
 </html>

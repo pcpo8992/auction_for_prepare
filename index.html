@@ -806,44 +806,139 @@
       // 刷新列表
       refreshItemList();
       
-      // 延遲檢查是否需要隱藏側邊欄
+      // 延遲檢查並恢復拍賣狀態
       setTimeout(() => {
-        checkAndHideSidebar();
+        checkAndRestoreAuction();
       }, 500);
     };
     
-    // 檢查並隱藏側邊欄
-    function checkAndHideSidebar() {
+    // 檢查並恢復拍賣狀態
+    function checkAndRestoreAuction() {
       database.ref("/item").once('value', e => {
         const items = e.val();
-        console.log('=== checkAndHideSidebar 開始執行 ===');
+        console.log('=== 檢查是否有進行中的拍賣 ===');
         
         if (items != null) {
           const itemArray = Object.values(items);
-          console.log('項目總數:', itemArray.length);
           
-          // 檢查是否有狀態為 2 且沒有結束標記的項目
-          const activeAuctions = itemArray.filter(item => 
+          // 尋找正在進行中的拍賣（status = 2 且沒有結束標記）
+          const activeAuction = itemArray.find(item => 
             item.status == 2 && !item.endAuction && !item.nopeople && !item.belowReserve
           );
           
-          console.log('進行中的拍賣項目:', activeAuctions);
-          console.log('是否有進行中的拍賣:', activeAuctions.length > 0);
-          
-          if (activeAuctions.length > 0) {
-            console.log('→ 執行隱藏側邊欄');
-            hideSidebar();
+          if (activeAuction) {
+            console.log('✓ 發現進行中的拍賣:', activeAuction);
+            console.log('  項目 ID:', activeAuction.unicID);
+            console.log('  項目名稱:', activeAuction.itemName);
+            
+            // 恢復拍賣狀態
+            restoreAuctionState(activeAuction);
           } else {
-            console.log('→ 執行顯示側邊欄');
+            console.log('✗ 沒有進行中的拍賣，顯示側邊欄');
             showSidebar();
           }
         } else {
-          console.log('沒有項目資料，顯示側邊欄');
+          console.log('沒有項目資料');
           showSidebar();
         }
-        
-        console.log('=== checkAndHideSidebar 執行結束 ===');
       });
+    }
+    
+    // 恢復拍賣狀態
+    function restoreAuctionState(itemObject) {
+      console.log('=== 開始恢復拍賣狀態 ===');
+      
+      // 設定當前項目 ID
+      currentItemID = itemObject.unicID;
+      
+      // 顯示拍賣資訊區塊
+      setHtmlTagStyleDisplay(".priceDetail", "flex");
+      setHtmlTagStyleDisplay(".itemDetail", "flex");
+      
+      // 填入拍賣物資訊
+      document.querySelector(".itemId").innerHTML = "拍賣物編號：" + "<span class='spanColor'>" + itemObject.itemID + "</span>";
+      document.querySelector(".itemName").innerHTML = ",拍賣物名稱：" + "<span class='spanColor'>" + itemObject.itemName + "</span>";
+      document.querySelector(".itemLeastPrice").innerHTML = ",最低加價金額：" + "<span class='spanColor leastPrice'>" + numberComma(itemObject.itemLeastPrice || 0) + "</span>";
+      
+      leastPrice = itemObject.itemLeastPrice || 0;
+      
+      // 恢復喊價記錄
+      if (itemObject.price_detail && itemObject.price_detail.li) {
+        console.log('✓ 發現喊價記錄，開始恢復');
+        
+        const priceDetails = itemObject.price_detail.li;
+        const priceArray = [];
+        
+        // 收集所有喊價記錄
+        for (let key in priceDetails) {
+          if (priceDetails[key] && priceDetails[key].myInputPrice) {
+            priceArray.push({
+              number: parseInt(key),
+              people: priceDetails[key].myInputPeople,
+              price: priceDetails[key].myInputPrice
+            });
+          }
+        }
+        
+        // 按編號排序（從大到小，最新的在前）
+        priceArray.sort((a, b) => b.number - a.number);
+        
+        console.log('  喊價記錄數量:', priceArray.length);
+        
+        // 恢復到頁面上
+        const ul = document.querySelector("#myUL");
+        priceArray.forEach(item => {
+          const li = document.createElement("li");
+          li.id = 'li' + item.number;
+          li.number = item.number;
+          li.value = item.price;
+          
+          const finialValue = item.people + "號競買人 喊價 " + numberComma(item.price) + " 元";
+          const t = document.createTextNode(finialValue);
+          li.appendChild(t);
+          
+          // 添加刪除功能
+          li.onclick = function() {
+            li.remove();
+            liNumber -= 1;
+            if (liNumber == 0) {
+              document.querySelector(".nowPrice").textContent = "";
+              setHtmlTagStyleDisplay(".price", "none");
+            } else {
+              const remainingLi = document.querySelector("#myUL li");
+              if (remainingLi) {
+                document.querySelector(".nowPrice").textContent = numberComma(remainingLi.value) + '元';
+              }
+            }
+            database.ref('/item/' + currentItemID + '/price_detail' + '/li/' + li.number).set("");
+          };
+          
+          ul.appendChild(li);
+          
+          // 更新 liNumber 為最大值
+          if (item.number > liNumber) {
+            liNumber = item.number;
+          }
+        });
+        
+        // 如果有喊價記錄，顯示最高金額
+        if (priceArray.length > 0) {
+          const highestPrice = priceArray[0].price;
+          document.querySelector(".nowPrice").textContent = numberComma(highestPrice) + '元';
+          setHtmlTagStyleDisplay(".price", "block");
+          console.log('  最高喊價:', highestPrice);
+        }
+      } else {
+        console.log('✗ 沒有喊價記錄');
+      }
+      
+      // 隱藏側邊欄（因為正在拍賣中）
+      hideSidebar();
+      
+      // 刷新列表以更新狀態
+      refreshItemList();
+      
+      console.log('=== 拍賣狀態恢復完成 ===');
     }
     
     // 隱藏側邊欄
